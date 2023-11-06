@@ -4,6 +4,7 @@ Prep for Vx Rpi instrumentation
 ## References
 * General setup and BME280 atmospheric sensor setup: https://learn.sparkfun.com/tutorials/introduction-to-the-raspberry-pi-gpio-and-physical-computing?_gl=1*190akoj*_ga*MTUxODQ3NjE5OC4xNjk5MTI2Njc5*_ga_T369JS7J9N*MTY5OTEzNzUwMS4yLjEuMTY5OTEzODI1MS42MC4wLjA.&_ga=2.259974664.362080396.1699126679-1518476198.1699126679
 * Qwiic distance sensor library: https://github.com/sparkfun/Qwiic_VL53L1X_Py
+* Qwiic atmospheric sensor library: https://github.com/sparkfun/Qwiic_BME280_Py
 
 
 ## Notes and Troubleshooting
@@ -15,6 +16,11 @@ The `externally-managed-environment` error may come up when installing drivers f
 ```bash
     python3 -m venv .venv
     source .venv/bin/activate
-    python3 -m pip install sparkfun-qwiic-bme280
+    python3 -m pip install sparkfun-qwiic
 ```
-This seems to work as of 11/5/23!  Check `sensor.py` for details.
+
+...or install a specific library, like `python3 -m pip install sparkfun-qwiic-bme280`
+
+To exit the virtual environment, use the command `deactivate`.
+
+This might work as of 11/5/23... Check `sensor.py` for details.
