@@ -2,12 +2,14 @@ import qwiic_bme280
 import time
 import sys
 
+print("Running sensor.py...")
+
 def runExample():
 
     print("\nSparkFun BME280 Sensor + Raspberry Pi Example \n")
     mySensor = qwiic_bme280.QwiicBme280()
 
-    if mySensor.isConnected() == False:
+    if mySensor.is_connected() == False:
         print("The Qwiic BME280 device isn't connected to the system.", 
             file=sys.stderr)
         return
@@ -26,3 +28,6 @@ def runExample():
         print("")
 
         time.sleep(1)
+
+
+runExample()
