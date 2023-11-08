@@ -18,7 +18,7 @@ Prep for Vx Rpi instrumentation
     ```bash
         python3 -m venv .venv
         source .venv/bin/activate
-        python3 -m pip install sparkfun-qwiic
+        python3 -m pip install sparkfun-qwiic RPi.GPIO
     ```
 
     ...or install a specific library, like `python3 -m pip install sparkfun-qwiic-bme280`
