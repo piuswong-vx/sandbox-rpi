@@ -1,7 +1,12 @@
+import qwiic
 import qwiic_bme280
 import qwiic_vl53l1x
 import time
 import sys
+
+# For checking devices available:
+# results = qwiic.list_devices()
+# print(results)
 
 print("Running sensor.py...")
 
