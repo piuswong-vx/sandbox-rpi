@@ -11,16 +11,35 @@ Prep for Vx Rpi instrumentation
 
 ### Installing dependencies and sensor libraries
 
-The `externally-managed-environment` error may come up when installing drivers for the Qwiic sensors.  For example when running: `sudo pip install sparkfun-qwiic-bme280`.  Some [guidance](https://stackoverflow.com/questions/75602063/pip-install-r-requirements-txt-is-failing-this-environment-is-externally-mana/75696359#75696359) led to running a virtual environment:
+* Check connections with `i2cdetect -y 1`.
 
-```bash
-    python3 -m venv .venv
-    source .venv/bin/activate
-    python3 -m pip install sparkfun-qwiic
-```
+* The `externally-managed-environment` error may come up when installing drivers for the Qwiic sensors.  For example when running: `sudo pip install sparkfun-qwiic-bme280`.  Some [guidance](https://stackoverflow.com/questions/75602063/pip-install-r-requirements-txt-is-failing-this-environment-is-externally-mana/75696359#75696359) led to running a virtual environment:
 
-...or install a specific library, like `python3 -m pip install sparkfun-qwiic-bme280`
+    ```bash
+        python3 -m venv .venv
+        source .venv/bin/activate
+        python3 -m pip install sparkfun-qwiic
+    ```
 
-To exit the virtual environment, use the command `deactivate`.
+    ...or install a specific library, like `python3 -m pip install sparkfun-qwiic-bme280`
+
+* To exit the virtual environment, use the command `deactivate`.
 
 This might work as of 11/5/23... Check `sensor.py` for details.
+
+### Running
+
+* The libraries have to have been installed first as described above.
+* Start the virtual environment: `source .venv/bin/activate`
+* Run with:
+
+    ```shell
+        python sensor.py
+    ```
+
+
+### Remote dev
+
+* You can use [VSCode's remote SSH extension](https://www.raspberrypi.com/news/coding-on-raspberry-pi-remotely-with-visual-studio-code/) to program remotely, if needed.
+* Make sure to enable SSH from the RPi settings, and to find the IP address of the RPi, possibly through the router adminstrator.
+* You can log into the RPi via the terminal with `ssh [username]@[ipaddress]`
