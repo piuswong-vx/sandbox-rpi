@@ -9,6 +9,11 @@ Prep for Vx Rpi instrumentation
 
 ## Notes and Troubleshooting
 
+### Hardware notes
+
+1. Connect Qwiic shim through [Pins 1-6 on RPi 4](https://pinout.xyz/) --> BME280 --> VL53L4CD
+2. Connect indicator LED through Pin 12 (GPIO 18) and Pin 6 (GND); Pin 12 --> LED+ (long leg) --> 330 ohm resistor --> Pin 6 / ground
+
 ### Installing dependencies and sensor libraries
 
 * Check connections with `i2cdetect -y 1`.
