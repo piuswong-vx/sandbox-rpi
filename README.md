@@ -21,6 +21,7 @@ Prep for Vx Rpi instrumentation
 	* For Relay 1 (STOP signal), connect Pin 17 on the RPi (3.3V) &rarr; VCC on the relay, Pin 16 (GPIO 23) &rarr; IN, and Pin 20 (GND) to GND.
 	* For Relay 2 (START signal), connect Pin 17 on the RPi (3.3V) &rarr; VCC on the relay, Pin 18 (GPIO 24) &rarr; IN, and Pin 20 (GND) to GND.
 	* In the default setup as of 11/2023, the relays connect to an M12 cable, where the black ground wire connects to the relay COM outputs, the yellow wire connects to the STOP relay NO output (normally open), and the red wire connects to the START relay NO output (normally open).   
+5. Set up the paper feeder according to records.  Set it on the slowest speed. Use the `test-relay.py` and `test-cuefeed.py` utilities to help confirm that the paper feeder system and connections are set up properly.
 
 
 ### Installing dependencies and sensor libraries
