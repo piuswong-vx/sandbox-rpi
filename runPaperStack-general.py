@@ -5,8 +5,8 @@
 # For more info, contact pius@voting.works
 
 # Initialize program
-#import qwiic_bme280
-#import qwiic_vl53l1x
+import qwiic_bme280
+import qwiic_vl53l1x
 import RPi.GPIO as GPIO
 import time
 import sys
@@ -55,9 +55,33 @@ feeder = Feeder(pinStop, pinStart, pinLed, timeSignal)
 cycles = 0
 
 try:
+    # Initialize sensors
+    print("\nInitializing sensors...\n")
+    sensorAtmospheric = qwiic_bme280.QwiicBme280()
+    sensorDist1 = qwiic_vl53l1x.QwiicVL53L1X()
+    if sensorAtmospheric.is_connected() == False:
+        print("The Qwiic BME280 (atmospheric) device isn't connected to the system.", 
+            file=sys.stderr)
+        raise Exception("Atmospheric sensor not connected.")
+    else:
+        print("The Qwiic BME280 (atmospheric) device is online!")
+    sensorAtmospheric.begin()
+    distance1 = 999
+    distance1past = 999
+    sensorDist1.sensor_init() 
+    if (sensorDist1.sensor_init() == None):
+        print("The Qwiic LV531X (IR distance) is online!")
+    else:
+        print("The Qwiic LV531X (IR distance) device isn't connected to the system.", 
+            file=sys.stderr)
+        raise Exception("Distance sensor not connected.")
+    print("\nSensors initialized.\n")
+    
+    # Initialize paper feeder parameters
     start = time.time()
     oldTime = 0
     
+    # Run paper feeder in cycles
     while True:
         cycles += 1
         print("Paper feed cycle:\t%3d" % cycles)
@@ -65,7 +89,14 @@ try:
         feeder.stop()
         totalTime = time.time() - start
         print("Time elapsed, total test time:\t%.3f" % totalTime)
+        print("\n")
         time.sleep(0.02)
+        
+        # Show sensor data
+        print("Humidity (RH):\t%.3f" % sensorAtmospheric.humidity)
+        print("Pressure (kPa):\t%.3f" % sensorAtmospheric.pressure)    
+        print("Altitude (ft):\t%.3f" % sensorAtmospheric.altitude_feet)
+        print("Temp (F):\t%.2f" % sensorAtmospheric.temperature_fahrenheit)
 
 except KeyboardInterrupt: # If CTRL+C is pressed, exit cleanly:
     print("Keyboard interrupt")
