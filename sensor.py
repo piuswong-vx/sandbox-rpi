@@ -1,4 +1,3 @@
-import qwiic
 import qwiic_bme280
 import qwiic_vl53l1x
 import RPi.GPIO as GPIO
@@ -9,10 +8,6 @@ import sys
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 GPIO.setup(18,GPIO.OUT)
-
-# For checking devices available:
-# results = qwiic.list_devices()
-# print(results)
 
 print("Running sensor.py...")
 
@@ -33,6 +28,7 @@ def runSensors():
     else:
         print("The Qwiic BME280 (atmospheric) device is online!")
         
+    sensorDist1.sensor_init() 
     if (sensorDist1.sensor_init() == None):
         print("The Qwiic LV531X (IR distance) is online!")
     else:
