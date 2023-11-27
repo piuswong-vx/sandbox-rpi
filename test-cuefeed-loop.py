@@ -11,25 +11,37 @@ print("Running test-cuefeed-loop.py...")
 # Set up output signal
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(18,GPIO.OUT) #LED
-GPIO.setup(23,GPIO.OUT) #STOP
-GPIO.setup(24,GPIO.OUT) #START
 
+# define these parameters according to desired system setup
 time.sleep(0.02)
-timeSignal = 0.1
-timeRunning = 2.5
+timeSignal = 0.1    # length of momentary signal trigger
+timeRunning = 2.5   # default length of time after start signal to stop 
+pinStop = 23
+pinStart = 24
 
-def startFeeder():
-    print("START momentary signal...")
-    GPIO.output(24, GPIO.HIGH)
-    time.sleep(timeSignal)
-    GPIO.output(24, GPIO.LOW)
-    time.sleep(timeRunning)
+class Feeder:
+    def __init__(self, pinStop, pinStart, timeSignal):
+        self.timeSignal = timeSignal
+        self.timeRunning = timeRunning
+        self.pinStop = pinStop
+        self.pinStart = pinStart
+        GPIO.setup(pinStop,GPIO.OUT) #STOP
+        GPIO.setup(pinStart,GPIO.OUT) #START
 
-def stopFeeder():
-    print("STOP momentary signal...")
-    GPIO.output(23, GPIO.HIGH)
-    time.sleep(timeSignal)
-    GPIO.output(23, GPIO.LOW)
+    def start(self,timeRunning):
+        print("START momentary signal...")
+        GPIO.output(self.pinStart, GPIO.HIGH)
+        time.sleep(timeSignal)
+        GPIO.output(self.pinStart, GPIO.LOW)
+        time.sleep(timeRunning)
+
+    def stop(self):
+        print("STOP momentary signal...")
+        GPIO.output(self.pinStop, GPIO.HIGH)
+        time.sleep(timeSignal)
+        GPIO.output(self.pinStop, GPIO.LOW)
+
+feeder = Feeder(pinStop, pinStart, timeSignal)
 
 try:
     print("set LED high")
@@ -38,8 +50,8 @@ try:
     
     while True:
         print("** START for a few seconds. **")
-        startFeeder()
-        stopFeeder()
+        feeder.start(timeRunning)
+        feeder.stop()
         time.sleep(1)
         end = time.time()
         print("Time elapsed: ", end - start)
@@ -47,11 +59,11 @@ try:
 except KeyboardInterrupt: # If CTRL+C is pressed, exit cleanly:
     print("Keyboard interrupt")
     print("STOP momentary signal...")
-    stopFeeder()
+    feeder.stop()
 
 except:
     print("error!") 
-    stopFeeder()
+    feeder.stop()
 
 finally:
     print("Ending GPIO control.") 
