@@ -12,11 +12,12 @@ import time
 import sys
 
 print("Running paper feeder test system...")
+time.sleep(0.02)
 
 # Define these paper feed parameters according to desired system setup
-time.sleep(0.02)
+timeMisfeed = 10     # seconds where paper detection suggests a misfeed (12 default)
 timeSignal = 0.1    # length of momentary signal trigger
-timeRunning = 2.5   # default length of time after start signal to stop 
+timeRunning = 1     # default length of time after start signal to stop  (<timeMisfeed, 1 default)
 pinStop = 23
 pinStart = 24
 pinLed = 18
@@ -28,7 +29,6 @@ GPIO.setmode(GPIO.BCM)
 class Feeder:
     def __init__(self, pinStop, pinStart, pinLed, timeSignal):
         self.timeSignal = timeSignal
-        self.timeRunning = timeRunning
         self.pinStop = pinStop
         self.pinStart = pinStart
         self.pinLed = pinLed
@@ -36,12 +36,11 @@ class Feeder:
         GPIO.setup(pinStart,GPIO.OUT) #START
         GPIO.setup(pinLed,GPIO.OUT) #LED
 
-    def start(self,timeRunning):
+    def start(self):
         GPIO.output(self.pinStart, GPIO.HIGH)
         time.sleep(timeSignal)
         GPIO.output(self.pinStart, GPIO.LOW)
         GPIO.output(self.pinLed, GPIO.HIGH)
-        time.sleep(timeRunning)
 
     def stop(self):
         GPIO.output(self.pinStop, GPIO.HIGH)
@@ -55,10 +54,9 @@ feeder = Feeder(pinStop, pinStart, pinLed, timeSignal)
 cycles = 0
 
 try:
-    # Initialize sensors
+    # Initialize atmospheric sensor
     print("\nInitializing sensors...\n")
     sensorAtmospheric = qwiic_bme280.QwiicBme280()
-    sensorDist1 = qwiic_vl53l1x.QwiicVL53L1X()
     if sensorAtmospheric.is_connected() == False:
         print("The Qwiic BME280 (atmospheric) device isn't connected to the system.", 
             file=sys.stderr)
@@ -66,8 +64,11 @@ try:
     else:
         print("The Qwiic BME280 (atmospheric) device is online!")
     sensorAtmospheric.begin()
+    
+    # Initialize distance sensor
+    sensorDist1 = qwiic_vl53l1x.QwiicVL53L1X()
     distance1 = 999
-    distance1past = 999
+    distanceThreshold = 200     # millimeters away considered "close"
     sensorDist1.sensor_init() 
     if (sensorDist1.sensor_init() == None):
         print("The Qwiic LV531X (IR distance) is online!")
@@ -78,25 +79,53 @@ try:
     print("\nSensors initialized.\n")
     
     # Initialize paper feeder parameters
-    start = time.time()
-    oldTime = 0
+    timeStart = time.time()
+    timeOld = timeStart
     
     # Run paper feeder in cycles
     while True:
+        timeInCycle = 0
+        timeCycleStart = time.time()
         cycles += 1
         print("Paper feed cycle:\t%3d" % cycles)
-        feeder.start(timeRunning)
+        feeder.start()
+        time.sleep(timeRunning)
         feeder.stop()
-        totalTime = time.time() - start
+                
+        # Poll sensor data for jams/errors before starting again
+        timeInterval = 0.5
+        objDetected = False   # objDetected for a long time = misfeed/jam 
+        misfeedDetected = False
+        while (timeInCycle < timeMisfeed) and not misfeedDetected :
+            time.sleep(timeInterval)
+            sensorDist1.start_ranging()
+            distance1 = sensorDist1.get_distance()
+            time.sleep(.005)
+            sensorDist1.stop_ranging()
+            # print("Dist 1 (mm):\t%.1f" % distance1) # debug
+            if (distance1 < distanceThreshold):
+                objDetected = True
+            else:
+                objDetected = False
+            timeInCycle = time.time() - timeCycleStart
+            print("time in cycle", timeInCycle) # debug
+            if (timeInCycle > timeMisfeed) and objDetected :
+                misfeedDetected = True
+                print("*** Misfeed detected! ***")
+
+        # Display cycle data
+        totalTime = time.time() - timeStart
         print("Time elapsed, total test time:\t%.3f" % totalTime)
-        print("\n")
-        time.sleep(0.02)
-        
-        # Show sensor data
         print("Humidity (RH):\t%.3f" % sensorAtmospheric.humidity)
         print("Pressure (kPa):\t%.3f" % sensorAtmospheric.pressure)    
         print("Altitude (ft):\t%.3f" % sensorAtmospheric.altitude_feet)
         print("Temp (F):\t%.2f" % sensorAtmospheric.temperature_fahrenheit)
+        print("\n")
+        time.sleep(0.02)        
+
+        # Stop cycling if misfeed detected
+        if misfeedDetected:
+            break
 
 except KeyboardInterrupt: # If CTRL+C is pressed, exit cleanly:
     print("Keyboard interrupt")
