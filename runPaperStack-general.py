@@ -17,7 +17,7 @@ print("Running paper feeder test system...")
 time.sleep(0.02)
 
 # Define these paper feed parameters according to desired system setup
-timeMisfeed = 12     # seconds where paper detection suggests a misfeed (12 default)
+timeMisfeed = 3     # seconds where paper detection suggests a misfeed (12 default)
 timeSignal = 0.1    # length of momentary signal trigger
 timeRunning = 1     # default length of time after start signal to stop  (<timeMisfeed, 1 default)
 pinStop = 23
@@ -93,42 +93,61 @@ try:
         writer = csv.writer(f)
         writer.writerow(fields)
     
-    # Initialize paper feeder parameters
+    # Initialize paper feeder parameters and states
     timeStart = time.time()
     timeOld = timeStart
+    objDetectedLastCycle = False	# record of if object was detected at all in previous cycle
+    feederRunning = False
+    misfeedDetected = False
+    endOfPaper = False
     
     # Run paper feeder in cycles
-    while True:
+    while not misfeedDetected and not endOfPaper:
         timeInCycle = 0
         timeCycleStart = time.time()
         cycles += 1
         print("Paper feed cycle:\t%3d" % cycles)
         feeder.start()
-        time.sleep(timeRunning)
-        feeder.stop()
+        feederRunning = True
                 
-        # Poll sensor data for jams/errors before starting again
-        timeInterval = 0.5
-        objDetected = False   # objDetected for a long time = misfeed/jam 
-        misfeedDetected = False
+        # Poll sensor data for to detect if paper passing through or sitting there
+        timeInterval = 0.2
+        objDetected = False   # current status; objDetected after a long time = misfeed/jam
+        objDetectedThisCycle = False	# record that paper went through in this cycle
         ledStatus = False
-        while (timeInCycle < timeMisfeed) and not misfeedDetected :
+        
+        while (timeInCycle < timeMisfeed) and not misfeedDetected and not endOfPaper:
+			# stop feeder as a backup signal
+            timeInCycle = time.time() - timeCycleStart
+            if feederRunning and (timeInCycle > timeRunning):
+                feeder.stop()
+                feederRunning = False
 			# blink LED to show system in use
             ledStatus = feeder.ledToggle(ledStatus)
-			# check distance sensor for blockage
+			# check distance sensor for blockage, or end of paper stack
             time.sleep(timeInterval)
             sensorDist1.start_ranging()
             distance1 = sensorDist1.get_distance()
             time.sleep(.005)
             sensorDist1.stop_ranging()
             if (distance1 < distanceThreshold):
-                objDetected = True
+                objDetected = True				# paper present now
+                objDetectedThisCycle = True 	
             else:
                 objDetected = False
-            timeInCycle = time.time() - timeCycleStart
-            if (timeInCycle > timeMisfeed) and objDetected :
-                misfeedDetected = True
-                print("*** Misfeed detected! ***")
+            if timeInCycle >= timeMisfeed:
+                if objDetected:
+                    misfeedDetected = True
+                    print("*** Misfeed detected! ***")
+                else:
+                    if objDetectedThisCycle:
+                        objDetectedLastCycle = True;
+                    else:
+                        objDetectedLastCycle = False
+                        if (cycles > 1) and not objDetectedThisCycle:
+                            endOfPaper = True
+                            print("*** End of paper detected! ***")
+            print(objDetectedLastCycle, objDetectedThisCycle)
             # add feature here to listen for error chimes (wip)
 
         # Display cycle data
