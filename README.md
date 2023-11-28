@@ -53,11 +53,19 @@ This might work as of 11/5/23... Check `sensor.py` for details.
 	source .venv/bin/activate
 	```
 
-* Run any utility like the following:
+* Some small Python utilities are available to check the setup in small parts. Run any utility like the following:
 
 	```shell
 	python sensor.py
 	```
+	
+    * `sensor.py`: Check if the sensors are reading correctly.
+    * `test-cuefeed.py`: Check if paper feeder can feed one sheet out.
+    * `test-cuefeed0loop.py`: Check if paper feeder can feed a stack of paper out.
+    * `test-distance.py`: Check distance sensor.
+    * `test-led.py`: Check LED connections.
+    * `test-qwiic.py`: Check Qwiic library availability.
+    * `test-relay.py`: Check relay connections.
 
 * Run the long-term testing with paper feeder and sensors integrated:
 
@@ -67,6 +75,7 @@ This might work as of 11/5/23... Check `sensor.py` for details.
 	
 	* You may want to set up the screen-blanking or screensaver feature for long-term tests, using `xset s 600` to set the screen timeout to 600 seconds or something similar.
 
+	* Data is saved in a file called `data-paperfeeder.csv` in the repo root directory.  It appends to that file, so make sure to rename, move, and/or delete the files created as needed.
 
 ### Remote dev
 
