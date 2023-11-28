@@ -10,12 +10,13 @@ import qwiic_vl53l1x
 import RPi.GPIO as GPIO
 import time
 import sys
+import csv
 
 print("Running paper feeder test system...")
 time.sleep(0.02)
 
 # Define these paper feed parameters according to desired system setup
-timeMisfeed = 10     # seconds where paper detection suggests a misfeed (12 default)
+timeMisfeed = 3     # seconds where paper detection suggests a misfeed (12 default)
 timeSignal = 0.1    # length of momentary signal trigger
 timeRunning = 1     # default length of time after start signal to stop  (<timeMisfeed, 1 default)
 pinStop = 23
@@ -78,6 +79,12 @@ try:
         raise Exception("Distance sensor not connected.")
     print("\nSensors initialized.\n")
     
+    # Initialize data output file
+    fields=['cycle','time (s)','Humidity (RH)','Pressure (kPa)','Temp (F)','Distance (mm)']
+    with open(r'data-paperfeeder.csv', 'a') as f:
+        writer = csv.writer(f)
+        writer.writerow(fields)
+    
     # Initialize paper feeder parameters
     timeStart = time.time()
     timeOld = timeStart
@@ -108,7 +115,7 @@ try:
             else:
                 objDetected = False
             timeInCycle = time.time() - timeCycleStart
-            print("time in cycle", timeInCycle) # debug
+            # print("time in cycle", timeInCycle) # debug
             if (timeInCycle > timeMisfeed) and objDetected :
                 misfeedDetected = True
                 print("*** Misfeed detected! ***")
@@ -122,6 +129,12 @@ try:
         print("Temp (F):\t%.2f" % sensorAtmospheric.temperature_fahrenheit)
         print("\n")
         time.sleep(0.02)        
+
+        # Write cycle data to file
+        fields=[cycles,totalTime,sensorAtmospheric.humidity,sensorAtmospheric.pressure,sensorAtmospheric.temperature_fahrenheit,distance1]
+        with open(r'data-paperfeeder.csv', 'a') as f:
+            writer = csv.writer(f)
+            writer.writerow(fields)
 
         # Stop cycling if misfeed detected
         if misfeedDetected:
