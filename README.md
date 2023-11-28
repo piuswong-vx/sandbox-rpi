@@ -11,6 +11,9 @@ Prep for Vx Rpi instrumentation
 
 ### Hardware notes
 
+Control hardware follows the general structure shown here:
+![Rough circuit diagram showing information described below](images/circuit.png "Circuit diagram of Raspberry Pi setup")
+
 1. Connect Qwiic shim through [Pins 1-6 on RPi 4](https://pinout.xyz/).  Connect the Qwiic connect cable to the shim, and then attach the heatsink (if necessary) over that, since it will block access to the shim.  
 2. Connect the sensors.
 	* Connect the BME280 atmospheric sensor via the Qwiic cable.  Insert cable on left side.  
@@ -21,7 +24,8 @@ Prep for Vx Rpi instrumentation
 	* For Relay 1 (STOP signal), connect Pin 17 on the RPi (3.3V) &rarr; VCC on the relay, Pin 16 (GPIO 23) &rarr; IN, and Pin 20 (GND) to GND.
 	* For Relay 2 (START signal), connect Pin 17 on the RPi (3.3V) &rarr; VCC on the relay, Pin 18 (GPIO 24) &rarr; IN, and Pin 20 (GND) to GND.
 	* In the default setup as of 11/2023, the relays connect to an M12 cable, where the black ground wire connects to the relay COM outputs, the yellow wire connects to the STOP relay NO output (normally open), and the red wire connects to the START relay NO output (normally open).   
-5. Set up the paper feeder according to records.  Set it on the slowest speed. Use the `test-relay.py` and `test-cuefeed.py` utilities to help confirm that the paper feeder system and connections are set up properly.
+5. Set up the paper feeder according to records.  Set it on the slowest speed. Use the `test-relay.py` and `test-cuefeed.py` utilities to help confirm that the paper feeder system and connections are set up properly, as well as the other utilities described in the next section below.
+6. The distance sensor must be fixed in place such that it detects the presence of paper remaining in the infeed tray of the device being monitored.
 
 
 ### Installing dependencies and sensor libraries
@@ -69,7 +73,7 @@ This might work as of 11/5/23... Check `sensor.py` for details.
 
 * Run the long-term testing with paper feeder and sensors integrated.  
 
-	* This runs the default program that also sends alerts to an email.  It requires setting up the proper `.env` parameters for email exchange.  (*If using a Gmail address, make sure to set up 2FA, and use an app password.*):
+	* This following comman runs the default program that also sends alerts to an email if misfeeds or an end of paper stack is detected.  It requires setting up the proper `.env` parameters for email exchange.  (*If using a Gmail address, make sure to set up 2FA, and use an app password.*):
 
 		```shell
 		python runPaperStack-misfeedAlerts.py
