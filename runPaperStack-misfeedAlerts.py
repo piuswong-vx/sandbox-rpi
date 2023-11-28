@@ -12,12 +12,19 @@ import time
 import datetime
 import sys
 import csv
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
+from dotenv import load_dotenv
+import os
+load_dotenv()
 
 print("Running paper feeder test system...")
 time.sleep(0.02)
 
 # Define these paper feed parameters according to desired system setup
-timeMisfeed = 12     # seconds where paper detection suggests a misfeed (12 default)
+timeMisfeed = int(os.getenv("TIME_MISFEED"))     # seconds where paper detection suggests a misfeed (12 default)
 timeSignal = 0.1    # length of momentary signal trigger
 timeRunning = 1     # default length of time after start signal to stop  (<timeMisfeed, 1 default)
 pinStop = 23
@@ -57,7 +64,36 @@ class Feeder:
             GPIO.output(self.pinLed, GPIO.HIGH)
         return not previousState
         
-feeder = Feeder(pinStop, pinStart, pinLed, timeSignal)	
+feeder = Feeder(pinStop, pinStart, pinLed, timeSignal)
+
+# Alerts for misfeeds
+def alertMisfeed(cycle, timeNow, totalTime, temp, humidity):
+    print("Sending message about alert...")
+    try:
+        email_user = os.getenv("EMAIL_USER")
+        email_mailpw = os.getenv("EMAIL_MAILPW")
+        email_send = os.getenv("EMAIL_SEND")
+        email_serverAddress = os.getenv("EMAIL_SERVER")
+        email_port = int(os.getenv("EMAIL_PORT"))
+        location = os.getenv("LOCATION")
+        print(email_user, email_mailpw, email_send)
+        subject = "[TEST UPDATE] Possible paper misfeed detected in %s, Cycle %s" % (location, cycle)
+        msg = MIMEMultipart()
+        msg["From"] = email_user
+        msg["To"] = email_send
+        msg["Subject"] = subject
+        body = "This is an automated message from your paper feeder test station in [%s].  A possible misfeed was detected with these parameters: " % location
+        body +=  "\n\nCycle: %s\r\nTime: %s\r\nTotal Time (s): %s\r\nTemp (F): %s\r\nHumidity (RH%%): %s" % (cycle, timeNow, totalTime, temp, humidity)
+        print(body)
+        msg.attach(MIMEText(body,"plain"))
+        text = msg.as_string()
+        server = smtplib.SMTP(email_serverAddress,email_port)
+        server.starttls()
+        server.login(email_user,email_mailpw)
+        server.sendmail(email_user,email_send,text)
+        server.quit()
+    except Exception as e:
+        print("Error sending alert message!", e) 
 
 # Start the whole system
 cycles = 0
@@ -149,6 +185,10 @@ try:
             writer = csv.writer(f)
             writer.writerow(fields)
 
+        # If misfeed detected, alert and stop
+        if misfeedDetected:
+            alertMisfeed(cycles, now, totalTime, sensorAtmospheric.temperature_fahrenheit, sensorAtmospheric.humidity)
+            break
 
 except KeyboardInterrupt: # If CTRL+C is pressed, exit cleanly:
     print("Keyboard interrupt")

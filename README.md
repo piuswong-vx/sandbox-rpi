@@ -33,7 +33,7 @@ Prep for Vx Rpi instrumentation
 	```bash
 	python3 -m venv .venv
 	source .venv/bin/activate
-	python3 -m pip install sparkfun-qwiic RPi.GPIO
+	python3 -m pip install sparkfun-qwiic sparkfun-qwiic-vl53l1x RPi.GPIO python-dotenv
 	```
 
     ...or install a specific library, like: 
@@ -67,14 +67,23 @@ This might work as of 11/5/23... Check `sensor.py` for details.
     * `test-qwiic.py`: Check Qwiic library availability.
     * `test-relay.py`: Check relay connections.
 
-* Run the long-term testing with paper feeder and sensors integrated:
+* Run the long-term testing with paper feeder and sensors integrated.  
 
-	```shell
-	python runPaperStack-general.py
-	```
+	* This runs the default program that also sends alerts to an email.  It requires setting up the proper `.env` parameters for email exchange.  (*If using a Gmail address, make sure to set up 2FA, and use an app password.*):
+
+		```shell
+		python runPaperStack-misfeedAlerts.py
+		```
+
+	* This runs the program without sending any email alerts:
+
+		```shell
+		python runPaperStack-general.py
+		```
+
 	
+    * Adjust the parameters in the `.env` file as needed.  An example of the parameters needed are in `example.env`.     
 	* You may want to set up the screen-blanking or screensaver feature for long-term tests, using `xset s 600` to set the screen timeout to 600 seconds or something similar.
-
 	* Data is saved in a file called `data-paperfeeder.csv` in the repo root directory.  It appends to that file, so make sure to rename, move, and/or delete the files created as needed.
 
 ### Remote dev
