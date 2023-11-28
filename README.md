@@ -30,11 +30,11 @@ Prep for Vx Rpi instrumentation
 
 * The `externally-managed-environment` error may come up when installing drivers for the Qwiic sensors.  For example when running: `sudo pip install sparkfun-qwiic-bme280`.  Some [guidance](https://stackoverflow.com/questions/75602063/pip-install-r-requirements-txt-is-failing-this-environment-is-externally-mana/75696359#75696359) led to running a virtual environment:
 
-    ```bash
-        python3 -m venv .venv
-        source .venv/bin/activate
-        python3 -m pip install sparkfun-qwiic RPi.GPIO
-    ```
+	```bash
+	python3 -m venv .venv
+	source .venv/bin/activate
+	python3 -m pip install sparkfun-qwiic RPi.GPIO
+	```
 
     ...or install a specific library, like: 
 	* `python3 -m pip install sparkfun-qwiic-bme280`
@@ -46,13 +46,26 @@ This might work as of 11/5/23... Check `sensor.py` for details.
 
 ### Running
 
-* The libraries have to have been installed first as described above.
-* Start the virtual environment: `source .venv/bin/activate`
-* Run with:
+* The libraries have to have been installed first as described above, to use the Sparkfun sensors.
+* If not already started, start the virtual environment for the Sparkfun sensor libraries: 
 
-    ```shell
-        python sensor.py
-    ```
+	```shell
+	source .venv/bin/activate
+	```
+
+* Run any utility like the following:
+
+	```shell
+	python sensor.py
+	```
+
+* Run the long-term testing with paper feeder and sensors integrated:
+
+	```shell
+	python runPaperStack-general.py
+	```
+	
+	* You may want to set up the screen-blanking or screensaver feature for long-term tests, using `xset s 600` to set the screen timeout to 600 seconds or something similar.
 
 
 ### Remote dev
@@ -60,3 +73,4 @@ This might work as of 11/5/23... Check `sensor.py` for details.
 * You can use [VSCode's remote SSH extension](https://www.raspberrypi.com/news/coding-on-raspberry-pi-remotely-with-visual-studio-code/) to program remotely, if needed.
 * Make sure to enable SSH from the RPi settings, and to find the IP address of the RPi, possibly through the router adminstrator.
 * You can log into the RPi via the terminal with `ssh [username]@[ipaddress]`
+
