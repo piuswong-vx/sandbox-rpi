@@ -16,7 +16,7 @@ print("Running paper feeder test system...")
 time.sleep(0.02)
 
 # Define these paper feed parameters according to desired system setup
-timeMisfeed = 3     # seconds where paper detection suggests a misfeed (12 default)
+timeMisfeed = 10     # seconds where paper detection suggests a misfeed (12 default)
 timeSignal = 0.1    # length of momentary signal trigger
 timeRunning = 1     # default length of time after start signal to stop  (<timeMisfeed, 1 default)
 pinStop = 23
@@ -48,7 +48,14 @@ class Feeder:
         time.sleep(timeSignal)
         GPIO.output(self.pinStop, GPIO.LOW)
         GPIO.output(self.pinLed, GPIO.LOW)
-
+        
+    def ledToggle(self,previousState):
+        if previousState:
+            GPIO.output(self.pinLed, GPIO.LOW)
+        else:
+            GPIO.output(self.pinLed, GPIO.HIGH)
+        return not previousState
+        
 feeder = Feeder(pinStop, pinStart, pinLed, timeSignal)
 
 # Start the whole system
@@ -103,22 +110,25 @@ try:
         timeInterval = 0.5
         objDetected = False   # objDetected for a long time = misfeed/jam 
         misfeedDetected = False
+        ledStatus = False
         while (timeInCycle < timeMisfeed) and not misfeedDetected :
+			# blink LED to show system in use
+            ledStatus = feeder.ledToggle(ledStatus)
+			# check distance sensor for blockage
             time.sleep(timeInterval)
             sensorDist1.start_ranging()
             distance1 = sensorDist1.get_distance()
             time.sleep(.005)
             sensorDist1.stop_ranging()
-            # print("Dist 1 (mm):\t%.1f" % distance1) # debug
             if (distance1 < distanceThreshold):
                 objDetected = True
             else:
                 objDetected = False
             timeInCycle = time.time() - timeCycleStart
-            # print("time in cycle", timeInCycle) # debug
             if (timeInCycle > timeMisfeed) and objDetected :
                 misfeedDetected = True
                 print("*** Misfeed detected! ***")
+            # add feature here to listen for error chimes (wip)
 
         # Display cycle data
         totalTime = time.time() - timeStart
@@ -136,7 +146,7 @@ try:
             writer = csv.writer(f)
             writer.writerow(fields)
 
-        # Stop cycling if misfeed detected
+        # If misfeed detected, stop and alert
         if misfeedDetected:
             break
 
