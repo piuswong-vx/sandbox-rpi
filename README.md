@@ -76,7 +76,7 @@ This might work as of 11/5/23... Check `sensor.py` for details.
 	* This following comman runs the default program that also sends alerts to an email if misfeeds or an end of paper stack is detected.  It requires setting up the proper `.env` parameters for email exchange.  (*If using a Gmail address, make sure to set up 2FA, and use an app password.*):
 
 		```shell
-		python runPaperStack-misfeedAlerts.py
+		python runPaperStack-alerts.py
 		```
 
 	* This runs the program without sending any email alerts:
