@@ -1,5 +1,5 @@
 # Use this code to help test if the paper feeder is set up correctly.
-# Hardware setup info here: https://github.com/piuswong-vx/sandbox-rpi
+# Hardware setup info here: https://github.com/votingworks/testing-autopaperfeeder
 
 import RPi.GPIO as GPIO
 import time

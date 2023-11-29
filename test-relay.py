@@ -1,5 +1,5 @@
 # Use this code to help test if you've set up the relay connections properly.
-# Hardware setup info here: https://github.com/piuswong-vx/sandbox-rpi
+# Hardware setup info here: https://github.com/votingworks/testing-autopaperfeeder
 
 import RPi.GPIO as GPIO
 import time
